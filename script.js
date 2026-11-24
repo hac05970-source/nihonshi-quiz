@@ -20,15 +20,47 @@ const genreNames = {
   mix: "総合学習",
 };
 
+const GENRE_DATA = {
+  geography: typeof GEOGRAPHY_QUIZ_DATA !== "undefined" ? GEOGRAPHY_QUIZ_DATA : [],
+  civics: typeof CIVICS_QUIZ_DATA !== "undefined" ? CIVICS_QUIZ_DATA : [],
+  current: typeof CURRENT_QUIZ_DATA !== "undefined" ? CURRENT_QUIZ_DATA : [],
+};
+
+function getGenreData(genre) {
+  if (genre === "mix") {
+    return ["geography", "civics", "current"].flatMap((key) =>
+      GENRE_DATA[key].map((item) => ({ ...item, genre: key }))
+    );
+  }
+  return (GENRE_DATA[genre] || []).map((item) => ({ ...item, genre }));
+}
+
 function updateGenreSettings() {
   const selectedGenre = document.querySelector('input[name="genre"]:checked').value;
   const isHistory = selectedGenre === "history";
+  const genreData = getGenreData(selectedGenre);
   document.querySelector("#history-settings").hidden = !isHistory;
-  document.querySelector("#construction").hidden = isHistory;
-  if (!isHistory) {
+  document.querySelector("#genre-settings").hidden = isHistory || genreData.length === 0;
+  document.querySelector("#construction").hidden = isHistory || genreData.length > 0;
+  if (!isHistory && genreData.length === 0) {
     document.querySelector("#construction-title").textContent =
       `${genreNames[selectedGenre]} は準備中です`;
   }
+  if (!isHistory && genreData.length > 0) {
+    renderCategories(genreData);
+  }
+}
+
+function renderCategories(genreData) {
+  const categoryList = document.querySelector("#category-list");
+  categoryList.innerHTML = "";
+  const categories = [...new Set(genreData.map((item) => item.era || "未分類"))];
+  for (const category of categories) {
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" value="${category}" checked><span>${category}</span>`;
+    categoryList.append(label);
+  }
+  updateGenreWrongCount();
 }
 
 document.querySelectorAll('input[name="genre"]').forEach((input) => {
@@ -41,6 +73,9 @@ function loadWrongItems() {
     const stored = JSON.parse(localStorage.getItem(WRONG_STORAGE_KEY) || "[]");
     const normalized = stored.map((key) => {
       if (typeof key !== "string") return null;
+      if (getGenreData("geography").concat(getGenreData("civics"), getGenreData("current")).some((item) =>
+        itemKey(item) === key
+      )) return key;
       const [year, eventName] = key.split("::");
       if (QUIZ_DATA.some((item) => itemKey(item) === key)) return key;
       const match = QUIZ_DATA.find((item) =>
@@ -62,9 +97,19 @@ function saveWrongItems(items) {
 
 function updateWrongCount() {
   document.querySelector("#wrong-count").textContent = String(loadWrongItems().length);
+  updateGenreWrongCount();
+}
+
+function updateGenreWrongCount() {
+  const genreCount = loadWrongItems().filter((key) => key.startsWith("genre::")).length;
+  const element = document.querySelector("#genre-wrong-count");
+  if (element) element.textContent = String(genreCount);
 }
 
 function itemKey(item) {
+  if (item.genre) {
+    return `genre::${item.genre}::${item.era || "未分類"}::${item.question}::${item.answer}`;
+  }
   return `${item.year}::${item.event}`;
 }
 
@@ -90,6 +135,18 @@ function getSelectedEras() {
 }
 
 function createChoices(question) {
+  if (question.mode === "answer") {
+    const pool = getGenreData(
+      document.querySelector('input[name="genre"]:checked').value
+    ).filter((item) =>
+      (item.era || "未分類") === question.era &&
+      item.answer !== question.answer
+    );
+    const candidates = shuffle(
+      [...new Set(pool.map((item) => item.answer))]
+    ).slice(0, 3);
+    return shuffle([question.answer, ...candidates]);
+  }
   const field = question.mode === "year" ? "year" : "event";
   const pool = QUIZ_DATA.filter((item) =>
     item.era === question.era &&
@@ -129,6 +186,46 @@ document.querySelector("#start-button").addEventListener("click", () => {
       : `${item.year}年に起きた出来事はどれですか？`;
     return { mode, era: item.era, item, question, answer };
   });
+
+  currentIndex = 0;
+  correctCount = 0;
+  document.querySelector("#score").textContent = "0";
+  setup.hidden = true;
+  result.hidden = true;
+  quiz.hidden = false;
+  renderQuestion();
+});
+
+document.querySelector("#genre-start-button").addEventListener("click", () => {
+  const selectedGenre = document.querySelector('input[name="genre"]:checked').value;
+  const categoryInputs = document.querySelectorAll("#category-list input:checked");
+  const selectedCategories = [...categoryInputs].map((input) => input.value);
+  if (!selectedCategories.length) {
+    alert("出題する分野を1つ以上選択してください。");
+    return;
+  }
+
+  let pool = getGenreData(selectedGenre).filter((item) =>
+    selectedCategories.includes(item.era || "未分類")
+  );
+  const courseMode = document.querySelector('input[name="genre-course"]:checked').value;
+  if (courseMode === "review") {
+    const wrongKeys = new Set(loadWrongItems());
+    pool = pool.filter((item) => wrongKeys.has(itemKey(item)));
+    if (!pool.length) {
+      alert("選択した分野には、復習する間違えた問題がありません。");
+      return;
+    }
+  }
+
+  const selected = shuffle(pool).slice(0, Math.min(10, pool.length));
+  questions = selected.map((item) => ({
+    mode: "answer",
+    era: item.era || "未分類",
+    item,
+    question: item.question,
+    answer: item.answer,
+  }));
 
   currentIndex = 0;
   correctCount = 0;
@@ -209,8 +306,10 @@ function answer(choice, clickedButton) {
   if (!isCorrect && clickedButton) clickedButton.classList.add("wrong");
 
   const feedback = document.querySelector("#feedback");
-  document.querySelector("#feedback-text").textContent =
-    `${isCorrect ? "正解！" : choice === null ? "時間切れ！" : "不正解"}　正解：${question.answer}${question.mode === "year" ? "年" : ""}　${question.item.year}年「${question.item.event}」`;
+  const resultText = question.mode === "answer"
+    ? `${isCorrect ? "正解！" : choice === null ? "時間切れ！" : "不正解"}　正解：${question.answer}`
+    : `${isCorrect ? "正解！" : choice === null ? "時間切れ！" : "不正解"}　正解：${question.answer}${question.mode === "year" ? "年" : ""}　${question.item.year}年「${question.item.event}」`;
+  document.querySelector("#feedback-text").textContent = resultText;
   feedback.hidden = false;
   document.querySelector("#next-button").textContent =
     currentIndex === questions.length - 1 ? "結果を見る" : "次の問題";
@@ -239,7 +338,12 @@ function showResult() {
 }
 
 document.querySelector("#retry-button").addEventListener("click", () => {
-  document.querySelector("#start-button").click();
+  const selectedGenre = document.querySelector('input[name="genre"]:checked').value;
+  if (selectedGenre === "history") {
+    document.querySelector("#start-button").click();
+  } else {
+    document.querySelector("#genre-start-button").click();
+  }
 });
 document.querySelector("#back-button").addEventListener("click", () => {
   result.hidden = true;
@@ -250,5 +354,13 @@ document.querySelector("#clear-wrong-button").addEventListener("click", () => {
   if (!loadWrongItems().length) return;
   if (confirm("間違えた問題の復習履歴をすべて削除しますか？")) {
     saveWrongItems([]);
+  }
+});
+
+document.querySelector("#clear-genre-wrong-button").addEventListener("click", () => {
+  const remaining = loadWrongItems().filter((key) => !key.startsWith("genre::"));
+  if (!loadWrongItems().some((key) => key.startsWith("genre::"))) return;
+  if (confirm("ジャンル別の間違えた問題の復習履歴をすべて削除しますか？")) {
+    saveWrongItems(remaining);
   }
 });

@@ -33,6 +33,23 @@
         <h3 id="construction-title">準備中です</h3>
         <p>問題を追加して公開予定です。今は「歴史」で学習できます。</p>
       </div>
+      <div id="genre-settings" hidden>
+        <fieldset>
+          <legend id="category-legend">分野を選択</legend>
+          <div id="category-list" class="era-list"></div>
+        </fieldset>
+        <fieldset>
+          <legend>出題モード</legend>
+          <div class="segmented course-segmented">
+            <label><input type="radio" name="genre-course" value="normal" checked><span>通常出題</span></label>
+            <label><input type="radio" name="genre-course" value="review"><span>間違えた問題を復習（<b id="genre-wrong-count">0</b>問）</span></label>
+          </div>
+        </fieldset>
+        <button id="clear-genre-wrong-button" class="text-button" type="button">復習履歴を削除</button>
+        <div class="setup-actions">
+          <button id="genre-start-button" class="primary" type="button">10問を開始</button>
+        </div>
+      </div>
       <div id="history-settings">
       <fieldset>
         <legend>時代を選択</legend>
@@ -91,6 +108,9 @@
   </main>
 
   <script src="quiz-data.js?v=20261125-genres"></script>
+  <script src="geography-data.js?v=20261125-genres"></script>
+  <script src="civics-data.js?v=20261125-genres"></script>
+  <script src="current-data.js?v=20261125-genres"></script>
   <script src="script.js?v=20261125-genres"></script>
 </body>
 </html>
