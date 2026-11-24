@@ -66,8 +66,11 @@ function getSelectedEras() {
 }
 
 function createChoices(question) {
-  const pool = QUIZ_DATA.filter((item) => item.era === question.era);
   const field = question.mode === "year" ? "year" : "event";
+  const pool = QUIZ_DATA.filter((item) =>
+    item.era === question.era &&
+    (field !== "event" || item.year !== question.item.year)
+  );
   const candidates = shuffle(
     [...new Set(pool.filter((item) => item[field] !== question.answer).map((item) => item[field]))]
   ).slice(0, 3);
