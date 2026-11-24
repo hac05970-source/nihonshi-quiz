@@ -8,6 +8,8 @@ let questions = [];
 let currentIndex = 0;
 let correctCount = 0;
 let selectedMode = "year";
+let timerId = null;
+const QUESTION_SECONDS = 10;
 const WRONG_STORAGE_KEY = "nihonshi-quiz-wrong-items";
 
 function loadWrongItems() {
@@ -64,9 +66,7 @@ function getSelectedEras() {
 }
 
 function createChoices(question) {
-  const pool = selectedMode === "mix"
-    ? QUIZ_DATA
-    : QUIZ_DATA.filter((item) => item.era && item.era);
+  const pool = QUIZ_DATA.filter((item) => item.era === question.era);
   const field = question.mode === "year" ? "year" : "event";
   const candidates = shuffle(
     [...new Set(pool.filter((item) => item[field] !== question.answer).map((item) => item[field]))]
@@ -118,6 +118,7 @@ function renderQuestion() {
   document.querySelector("#progress-label").textContent = `${currentIndex + 1} / ${questions.length}`;
   document.querySelector("#progress-bar").style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
   document.querySelector("#question").textContent = question.question;
+  startTimer();
 
   const choices = document.querySelector("#choices");
   choices.innerHTML = "";
@@ -133,9 +134,33 @@ function renderQuestion() {
   }
 }
 
+function startTimer() {
+  if (timerId) clearInterval(timerId);
+  const startedAt = Date.now();
+  document.querySelector("#timer-label").textContent = `${QUESTION_SECONDS}秒`;
+  document.querySelector("#timer-bar").style.width = "100%";
+
+  timerId = setInterval(() => {
+    const elapsed = (Date.now() - startedAt) / 1000;
+    const remaining = Math.max(0, QUESTION_SECONDS - elapsed);
+    document.querySelector("#timer-label").textContent =
+      remaining >= 1 ? `${Math.ceil(remaining)}秒` : "0秒";
+    document.querySelector("#timer-bar").style.width = `${remaining / QUESTION_SECONDS * 100}%`;
+    if (remaining <= 0) {
+      clearInterval(timerId);
+      timerId = null;
+      answer(null, null);
+    }
+  }, 100);
+}
+
 function answer(choice, clickedButton) {
+  if (timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  }
   const question = questions[currentIndex];
-  const isCorrect = choice === question.answer;
+  const isCorrect = choice !== null && choice === question.answer;
   const key = itemKey(question.item);
   const wrongItems = loadWrongItems();
   if (isCorrect) {
@@ -153,11 +178,11 @@ function answer(choice, clickedButton) {
     const value = button.textContent.replace(/年$/, "");
     if (value === String(question.answer)) button.classList.add("correct");
   });
-  if (!isCorrect) clickedButton.classList.add("wrong");
+  if (!isCorrect && clickedButton) clickedButton.classList.add("wrong");
 
   const feedback = document.querySelector("#feedback");
   document.querySelector("#feedback-text").textContent =
-    `${isCorrect ? "正解！" : "不正解"}　正解：${question.answer}${question.mode === "year" ? "年" : ""}　${question.item.year}年「${question.item.event}」`;
+    `${isCorrect ? "正解！" : choice === null ? "時間切れ！" : "不正解"}　正解：${question.answer}${question.mode === "year" ? "年" : ""}　${question.item.year}年「${question.item.event}」`;
   feedback.hidden = false;
   document.querySelector("#next-button").textContent =
     currentIndex === questions.length - 1 ? "結果を見る" : "次の問題";
@@ -173,6 +198,10 @@ document.querySelector("#next-button").addEventListener("click", () => {
 });
 
 function showResult() {
+  if (timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  }
   quiz.hidden = true;
   result.hidden = false;
   document.querySelector("#result-score").textContent = `${correctCount} / ${questions.length}`;
