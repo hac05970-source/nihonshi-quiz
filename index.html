@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>日本史 年代クイズ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">入試頻出・重要年代まとめ</p>
+        <h1>日本史 年代クイズ</h1>
+      </div>
+      <div class="score" aria-live="polite"><span id="score">0</span><small>点</small></div>
+    </header>
+
+    <section id="setup" class="panel setup">
+      <h2>出題設定</h2>
+      <fieldset>
+        <legend>時代を選択</legend>
+        <div id="era-list" class="era-list"></div>
+      </fieldset>
+      <fieldset>
+        <legend>クイズ形式</legend>
+        <div class="segmented">
+          <label><input type="radio" name="mode" value="year" checked><span>出来事 → 年代</span></label>
+          <label><input type="radio" name="mode" value="event"><span>年代 → 出来事</span></label>
+          <label><input type="radio" name="mode" value="mix"><span>ミックス</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>出題モード</legend>
+        <div class="segmented course-segmented">
+          <label><input type="radio" name="course" value="normal" checked><span>通常出題</span></label>
+          <label><input type="radio" name="course" value="review"><span>間違えた問題を復習（<b id="wrong-count">0</b>問）</span></label>
+        </div>
+      </fieldset>
+      <button id="clear-wrong-button" class="text-button" type="button">復習履歴を削除</button>
+      <div class="setup-actions">
+        <button id="start-button" class="primary" type="button">10問を開始</button>
+      </div>
+    </section>
+
+    <section id="quiz" class="panel quiz" hidden>
+      <div class="quiz-meta">
+        <span id="era-label"></span>
+        <span id="progress-label"></span>
+      </div>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <h2 id="question"></h2>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" class="feedback" hidden>
+        <p id="feedback-text"></p>
+        <button id="next-button" class="primary" type="button">次の問題</button>
+      </div>
+    </section>
+
+    <section id="result" class="panel result" hidden>
+      <p class="eyebrow">RESULT</p>
+      <h2 id="result-score"></h2>
+      <p id="result-message"></p>
+      <div class="setup-actions">
+        <button id="retry-button" class="primary" type="button">もう一度</button>
+        <button id="back-button" class="secondary" type="button">設定に戻る</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="quiz-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
