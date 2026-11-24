@@ -15,7 +15,7 @@ const GEOGRAPHY_QUIZ_DATA = [
     question: "地図で①と示された山地はどれですか？",
     answer: "北見山地",
     era: "日本の山地・山脈",
-    image: "assets/mountains-and-mountain-ranges.png",
+    image: "mountains-and-mountain-ranges.png",
     imageAlt: "日本の山地・山脈の位置を示した地図",
     imageCaption: "山脈編：日本の山地・山脈",
     choices: ["北見山地", "石狩山地", "北上山地", "阿武隈高地"],

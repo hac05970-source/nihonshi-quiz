@@ -249,9 +249,26 @@ function renderQuestion() {
   const imageElement = document.querySelector("#question-image-element");
   const imageCaption = document.querySelector("#question-image-caption");
   if (question.item.image) {
-    const imageUrl = new URL(question.item.image, document.baseURI);
-    imageUrl.searchParams.set("v", "20261125-mountains");
-    imageElement.src = imageUrl.href;
+    const imagePaths = [
+      question.item.image,
+      "assets/mountains-and-mountain-ranges.png",
+      "mountains-and-mountain-ranges.png",
+    ];
+    let imagePathIndex = 0;
+    imageElement.hidden = true;
+    imageElement.onerror = () => {
+      imagePathIndex++;
+      if (imagePathIndex < imagePaths.length) {
+        imageElement.src = new URL(
+          imagePaths[imagePathIndex],
+          document.baseURI
+        ).href + "?v=20261125-mountains";
+      }
+    };
+    imageElement.onload = () => {
+      imageElement.hidden = false;
+    };
+    imageElement.src = new URL(imagePaths[0], document.baseURI).href + "?v=20261125-mountains";
     imageElement.alt = question.item.imageAlt || "問題に表示する地図・画像";
     imageCaption.textContent = question.item.imageCaption || "";
     imageCaption.hidden = !question.item.imageCaption;

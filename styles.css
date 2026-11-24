@@ -191,6 +191,7 @@ button {
   object-fit: contain;
   background: white;
 }
+.question-image img[hidden] { display: none; }
 .question-image p {
   margin: 8px 12px;
   color: var(--muted);
