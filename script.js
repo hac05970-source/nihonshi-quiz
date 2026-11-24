@@ -249,7 +249,9 @@ function renderQuestion() {
   const imageElement = document.querySelector("#question-image-element");
   const imageCaption = document.querySelector("#question-image-caption");
   if (question.item.image) {
-    imageElement.src = question.item.image;
+    const imageUrl = new URL(question.item.image, document.baseURI);
+    imageUrl.searchParams.set("v", "20261125-mountains");
+    imageElement.src = imageUrl.href;
     imageElement.alt = question.item.imageAlt || "問題に表示する地図・画像";
     imageCaption.textContent = question.item.imageCaption || "";
     imageCaption.hidden = !question.item.imageCaption;
