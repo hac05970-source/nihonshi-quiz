@@ -137,15 +137,16 @@ function renderQuestion() {
 function startTimer() {
   if (timerId) clearInterval(timerId);
   const startedAt = Date.now();
+  const timerLabel = document.querySelector("#timer-label");
+  const timerBar = document.querySelector("#timer-bar");
   document.querySelector("#timer-label").textContent = `${QUESTION_SECONDS}秒`;
   document.querySelector("#timer-bar").style.width = "100%";
 
   timerId = setInterval(() => {
     const elapsed = (Date.now() - startedAt) / 1000;
     const remaining = Math.max(0, QUESTION_SECONDS - elapsed);
-    document.querySelector("#timer-label").textContent =
-      remaining >= 1 ? `${Math.ceil(remaining)}秒` : "0秒";
-    document.querySelector("#timer-bar").style.width = `${remaining / QUESTION_SECONDS * 100}%`;
+    timerLabel.textContent = remaining > 0 ? `${Math.ceil(remaining)}秒` : "0秒";
+    timerBar.style.width = `${remaining / QUESTION_SECONDS * 100}%`;
     if (remaining <= 0) {
       clearInterval(timerId);
       timerId = null;
