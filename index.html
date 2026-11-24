@@ -3,21 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>日本史 年代クイズ</title>
-  <link rel="stylesheet" href="styles.css?v=20261124-timer">
+  <title>社会科 年代・学習クイズ</title>
+  <link rel="stylesheet" href="styles.css?v=20261125-genres">
 </head>
 <body>
   <main class="app">
     <header class="topbar">
       <div>
-        <p class="eyebrow">入試頻出・重要年代まとめ</p>
-        <h1>日本史 年代クイズ</h1>
+        <p class="eyebrow">入試頻出・社会科まとめ</p>
+        <h1>社会科 学習クイズ</h1>
       </div>
       <div class="score" aria-live="polite"><span id="score">0</span><small>点</small></div>
     </header>
 
     <section id="setup" class="panel setup">
       <h2>出題設定</h2>
+      <fieldset>
+        <legend>ジャンルを選択</legend>
+        <div class="genre-list">
+          <label><input type="radio" name="genre" value="history" checked><span>歴史</span></label>
+          <label><input type="radio" name="genre" value="geography"><span>地理</span></label>
+          <label><input type="radio" name="genre" value="civics"><span>公民</span></label>
+          <label><input type="radio" name="genre" value="current"><span>時事</span></label>
+          <label><input type="radio" name="genre" value="mix"><span>総合学習</span></label>
+        </div>
+      </fieldset>
+      <div id="construction" class="construction" hidden>
+        <div class="construction-icon" aria-hidden="true">工事中</div>
+        <h3 id="construction-title">準備中です</h3>
+        <p>問題を追加して公開予定です。今は「歴史」で学習できます。</p>
+      </div>
+      <div id="history-settings">
       <fieldset>
         <legend>時代を選択</legend>
         <div id="era-list" class="era-list"></div>
@@ -40,6 +56,7 @@
       <button id="clear-wrong-button" class="text-button" type="button">復習履歴を削除</button>
       <div class="setup-actions">
         <button id="start-button" class="primary" type="button">10問を開始</button>
+      </div>
       </div>
     </section>
 
@@ -73,7 +90,7 @@
     </section>
   </main>
 
-  <script src="quiz-data.js?v=20261124-quiz-update"></script>
-  <script src="script.js?v=20261124-quiz-update"></script>
+  <script src="quiz-data.js?v=20261125-genres"></script>
+  <script src="script.js?v=20261125-genres"></script>
 </body>
 </html>

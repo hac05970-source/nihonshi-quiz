@@ -12,6 +12,30 @@ let timerId = null;
 const QUESTION_SECONDS = 10;
 const WRONG_STORAGE_KEY = "nihonshi-quiz-wrong-items";
 
+const genreNames = {
+  history: "歴史",
+  geography: "地理",
+  civics: "公民",
+  current: "時事",
+  mix: "総合学習",
+};
+
+function updateGenreSettings() {
+  const selectedGenre = document.querySelector('input[name="genre"]:checked').value;
+  const isHistory = selectedGenre === "history";
+  document.querySelector("#history-settings").hidden = !isHistory;
+  document.querySelector("#construction").hidden = isHistory;
+  if (!isHistory) {
+    document.querySelector("#construction-title").textContent =
+      `${genreNames[selectedGenre]} は準備中です`;
+  }
+}
+
+document.querySelectorAll('input[name="genre"]').forEach((input) => {
+  input.addEventListener("change", updateGenreSettings);
+});
+updateGenreSettings();
+
 function loadWrongItems() {
   try {
     const stored = JSON.parse(localStorage.getItem(WRONG_STORAGE_KEY) || "[]");
