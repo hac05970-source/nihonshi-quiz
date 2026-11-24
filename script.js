@@ -136,6 +136,9 @@ function getSelectedEras() {
 
 function createChoices(question) {
   if (question.mode === "answer") {
+    if (Array.isArray(question.item.choices) && question.item.choices.length) {
+      return shuffle([...question.item.choices]);
+    }
     const pool = getGenreData(
       document.querySelector('input[name="genre"]:checked').value
     ).filter((item) =>
@@ -242,6 +245,21 @@ function renderQuestion() {
   document.querySelector("#progress-label").textContent = `${currentIndex + 1} / ${questions.length}`;
   document.querySelector("#progress-bar").style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
   document.querySelector("#question").textContent = question.question;
+  const imageContainer = document.querySelector("#question-image");
+  const imageElement = document.querySelector("#question-image-element");
+  const imageCaption = document.querySelector("#question-image-caption");
+  if (question.item.image) {
+    imageElement.src = question.item.image;
+    imageElement.alt = question.item.imageAlt || "問題に表示する地図・画像";
+    imageCaption.textContent = question.item.imageCaption || "";
+    imageCaption.hidden = !question.item.imageCaption;
+    imageContainer.hidden = false;
+  } else {
+    imageElement.removeAttribute("src");
+    imageElement.alt = "";
+    imageCaption.textContent = "";
+    imageContainer.hidden = true;
+  }
   startTimer();
 
   const choices = document.querySelector("#choices");
